@@ -210,7 +210,7 @@
 
     async function loadDrivers() { 
       try { 
-        const response = await fetch("http://localhost:5000/api/drivers");
+        const response = await fetch("${process.env.API}/api/drivers");
         const drivers = await response.json();
         
         drivers.forEach(driver => {
@@ -227,7 +227,7 @@
     // Fetch and display lorries
     async function loadLorries() {
       try {
-        const response = await fetch("http://localhost:5000/api/lorries");
+        const response = await fetch("${process.env.API}/api/lorries");
         const lorries = await response.json();
 
         lorryList.innerHTML = ""; // Clear previous entries
@@ -281,7 +281,7 @@
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/lorries", {
+        const response = await fetch("${process.env.API}/api/lorries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ lorryid, driver: driverId || null })
@@ -304,7 +304,7 @@
 
         try {
             // First check if lorry is being used in any shipments
-            const shipmentResponse = await fetch(`http://localhost:5000/api/shipments`);
+            const shipmentResponse = await fetch(`${process.env.API}/api/shipments`);
             const shipments = await shipmentResponse.json();
             
             // Check if lorry is used in any shipments
@@ -316,7 +316,7 @@
             }
 
             // Fixed the URL path - removed 'lorries' from the path since it's already in the base route
-            const response = await fetch(`http://localhost:5000/api/lorries/${lorryId}`, {
+            const response = await fetch(`${process.env.API}/api/lorries/${lorryId}`, {
                 method: 'DELETE'
             });
 

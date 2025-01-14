@@ -85,7 +85,7 @@
 
     async function fetchDriverDetails() {
         try {
-            const response = await fetch(`http://localhost:5000/api/drivers/${driverId}`);
+            const response = await fetch(`${process.env.API}/api/drivers/${driverId}`);
             if (!response.ok) throw new Error("Failed to fetch driver details");
 
             const driver = await response.json();
@@ -110,7 +110,7 @@
         };
 
         try {
-            const response = await fetch(`http://localhost:5000/api/drivers/${driverId}`, {
+            const response = await fetch(`${process.env.API}/api/drivers/${driverId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedData),

@@ -121,7 +121,7 @@
 
         async function fetchLorries() {
             try {
-                const response = await fetch("http://localhost:5000/api/lorries");
+                const response = await fetch("${process.env.API}/api/lorries");
                 if (!response.ok) throw new Error("Failed to fetch lorries");
                 const lorries = await response.json();
 
@@ -141,7 +141,7 @@
             try {
                 console.log("Fetching shipment with ID:", shipmentId);
 
-                const response = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`);
+                const response = await fetch(`${process.env.API}/api/shipments/${shipmentId}`);
                 
                 if (!response.ok) {
                     console.error("Server response not OK:", response.status, response.statusText);
@@ -163,7 +163,7 @@
                 // Fetch order details to display order information
                 if (shipment.orderid) {
                     try {
-                        const orderResponse = await fetch(`http://localhost:5000/api/orders/${shipment.orderid}`);
+                        const orderResponse = await fetch(`${process.env.API}/api/orders/${shipment.orderid}`);
                         const orderData = await orderResponse.json();
                         // Display order number or description in the read-only input
                         document.getElementById("orderSelect").value = 
@@ -190,7 +190,7 @@
         async function updateShipment(shipmentId) {
             try {
                 // First get the original shipment to preserve the order ID
-                const originalResponse = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`);
+                const originalResponse = await fetch(`${process.env.API}/api/shipments/${shipmentId}`);
                 const originalShipment = await originalResponse.json();
 
                 const shipmentData = {
@@ -203,7 +203,7 @@
                     notification: "Unsend"
                 };
 
-                const response = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`, {
+                const response = await fetch(`${process.env.API}/api/shipments/${shipmentId}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json"

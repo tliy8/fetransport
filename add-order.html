@@ -62,7 +62,7 @@
 
     async function fetchLorries() {
       try {
-        const response = await fetch("http://localhost:5000/api/lorries"); // Adjust API URL as needed
+        const response = await fetch("${process.env.API}/api/lorries"); // Adjust API URL as needed
         const lorries = await response.json();
 
         lorries.forEach(lorry => {
@@ -92,7 +92,7 @@
     const orderData = { orderNumber, orderDescription, lorryid, orderDate };
 
       try {
-        const response = await fetch("http://localhost:5000/api/orders/", {
+        const response = await fetch("${process.env.API}/api/orders/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(orderData),

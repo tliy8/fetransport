@@ -127,7 +127,7 @@
   <script>
     async function fetchDrivers() {
       try {
-        const response = await fetch("http://localhost:5000/api/drivers");
+        const response = await fetch("${process.env.API}/api/drivers");
         if (!response.ok) {
           throw new Error('Failed to fetch drivers');
         }
@@ -174,7 +174,7 @@
           const driverId = this.getAttribute("data-id");
           if (confirm("Are you sure you want to delete this driver?")) {
             try {
-              const response = await fetch(`http://localhost:5000/api/drivers/${driverId}`, {
+              const response = await fetch(`${process.env.API}/api/drivers/${driverId}`, {
                 method: "DELETE",
               });
               if (!response.ok) {

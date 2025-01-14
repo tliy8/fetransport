@@ -238,7 +238,7 @@
         // Fetch and populate lorries
         async function fetchLorries() {
             try {
-                const response = await fetch("http://localhost:5000/api/lorries");
+                const response = await fetch("${process.env.API}/api/lorries");
                 if (!response.ok) throw new Error("Failed to fetch lorries");
                 const lorries = await response.json();
 
@@ -265,7 +265,7 @@
             return;
         }
         // Send the lorryid in the body of a POST request
-        const response = await fetch("http://localhost:5000/api/orders/check", {
+        const response = await fetch("${process.env.API}/api/orders/check", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -334,7 +334,7 @@ function clearOrdersDropdown() {
     // Fetch order details based on the selected order
     async function fetchOrderDetails(orderid) {
       try {
-        const response = await fetch(`http://localhost:5000/api/orders/${orderId}`); // Adjust API URL as needed
+        const response = await fetch(`${process.env.API}/api/orders/${orderId}`); // Adjust API URL as needed
         const order = await response.json();
 
         // Clear previous rows
@@ -416,7 +416,7 @@ function clearOrdersDropdown() {
 
     try {
         // Fetch order details to get orderNumber
-        const orderResponse = await fetch(`http://localhost:5000/api/orders/${orderid}`);
+        const orderResponse = await fetch(`${process.env.API}/api/orders/${orderid}`);
         if (!orderResponse.ok) {
             throw new Error("Failed to fetch order details.");
         }
@@ -435,7 +435,7 @@ function clearOrdersDropdown() {
         };
 
         // Add the shipment using an API
-        const addShipmentResponse = await fetch("http://localhost:5000/api/shipments", {
+        const addShipmentResponse = await fetch("${process.env.API}/api/shipments", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -478,7 +478,7 @@ async function sendAllOrders() {
         whatsappButton.disabled = true;
 
         // Fetch complete shipment details
-        const shipmentsResponse = await fetch(`http://localhost:5000/api/shipments/multiple`, {
+        const shipmentsResponse = await fetch(`${process.env.API}/api/shipments/multiple`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -490,7 +490,7 @@ async function sendAllOrders() {
         const shipments = await shipmentsResponse.json();
 
         // Fetch lorry details for the first shipment
-        const lorryResponse = await fetch(`http://localhost:5000/api/lorries/${shipments[0].lorryid}`);
+        const lorryResponse = await fetch(`${process.env.API}/api/lorries/${shipments[0].lorryid}`);
 
         if (!lorryResponse.ok) throw new Error("Failed to fetch lorry details");
         const lorryData = await lorryResponse.json();
@@ -528,7 +528,7 @@ async function sendAllOrders() {
 
         // Update notification status in the database
         for (let shipmentId of selectedShipmentIds) {
-            const updateResponse = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`, {
+            const updateResponse = await fetch(`${process.env.API}/api/shipments/${shipmentId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -558,17 +558,17 @@ async function sendAllOrders() {
 async function fetchShipments() {
     try {
         // Fetch all shipments
-        const response = await fetch("http://localhost:5000/api/shipments/");
+        const response = await fetch("${process.env.API}/api/shipments/");
         if (!response.ok) throw new Error("Failed to fetch shipments");
         const shipments = await response.json();
 
         // Fetch all orders to check availability
-        const ordersResponse = await fetch("http://localhost:5000/api/orders");
+        const ordersResponse = await fetch("${process.env.API}/api/orders");
         if (!ordersResponse.ok) throw new Error("Failed to fetch orders");
         const orders = await ordersResponse.json();
 
         // Fetch all lorries
-        const lorriesResponse = await fetch("http://localhost:5000/api/lorries");
+        const lorriesResponse = await fetch("${process.env.API}/api/lorries");
         if (!lorriesResponse.ok) throw new Error("Failed to fetch lorries");
         const lorries = await lorriesResponse.json();
 
@@ -675,7 +675,7 @@ async function fetchShipments() {
         };
 
         try {
-            const response = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`, {
+            const response = await fetch(`${process.env.API}/api/shipments/${shipmentId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -702,7 +702,7 @@ async function fetchShipments() {
         }
 
         try {
-            const response = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`, {
+            const response = await fetch(`${process.env.API}/api/shipments/${shipmentId}`, {
                 method: "DELETE"
             });
 
@@ -758,7 +758,7 @@ async function fetchShipments() {
 
         try {
             // Changed the endpoint to match your backend route
-            const response = await fetch("http://localhost:5000/api/shipments/delete-many", {
+            const response = await fetch("${process.env.API}/api/shipments/delete-many", {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"

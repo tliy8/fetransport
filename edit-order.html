@@ -103,7 +103,7 @@
 // ✅ Fetch Order Details
 async function fetchOrderDetails() {
   try {
-    const response = await fetch(`http://localhost:5000/api/orders/${orderId}`);
+    const response = await fetch(`${process.env.API}/api/orders/${orderId}`);
     if (!response.ok) throw new Error("Failed to fetch order details");
 
     const order = await response.json();
@@ -137,7 +137,7 @@ async function fetchOrderDetails() {
   // ✅ Fetch Lorry List & Set Default Selection
   async function fetchLorryList(selectedLorryId = "") {
   try {
-    const response = await fetch("http://localhost:5000/api/lorries");
+    const response = await fetch("${process.env.API}/api/lorries");
     if (!response.ok) throw new Error("Failed to fetch lorry list");
 
     const lorries = await response.json();
@@ -168,7 +168,7 @@ function updateLorryNumber() {
   const selectedLorryId = document.getElementById("lorryId").value;
   const selectedLorryDisplay = document.getElementById("selectedLorryNumber");
 
-  fetch("http://localhost:5000/api/lorries")
+  fetch("${process.env.API}/api/lorries")
     .then(response => response.json())
     .then(lorries => {
       const selectedLorry = lorries.find(lorry => lorry._id === selectedLorryId);
@@ -189,7 +189,7 @@ function updateLorryNumber() {
     };
 
     try {
-        const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+        const response = await fetch(`${process.env.API}/api/orders/${orderId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

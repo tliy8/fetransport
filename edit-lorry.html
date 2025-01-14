@@ -77,7 +77,7 @@
     // Fetch and populate the lorry data
     async function loadLorryDetails() {
       try {
-        const lorryResponse = await fetch(`http://localhost:5000/api/lorries/${lorryid}`);
+        const lorryResponse = await fetch(`${process.env.API}/api/lorries/${lorryid}`);
         const lorry = await lorryResponse.json();
 
         document.getElementById('lorryName').value = lorry.lorryid;
@@ -90,7 +90,7 @@
     // Fetch and populate available drivers
     async function loadDrivers(selectedDriverId = '') {
       try {
-        const driverResponse = await fetch('http://localhost:5000/api/drivers');
+        const driverResponse = await fetch('${process.env.API}/api/drivers');
         const drivers = await driverResponse.json();
 
         const driverSelect = document.getElementById('driverSelect');
@@ -126,7 +126,7 @@
       }
 
       try {
-        const response = await fetch(`http://localhost:5000/api/lorries/${lorryid}`, {
+        const response = await fetch(`${process.env.API}/api/lorries/${lorryid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lorryid: lorryNameInput, driver: driverId || null })

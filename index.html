@@ -113,7 +113,7 @@
         // Fetch and display orders
         async function loadShipments() {
     try {
-        const response = await fetch('http://localhost:5000/api/shipments');
+        const response = await fetch('${process.env.API}/api/shipments');
         const orders = await response.json();
 
         const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
