@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Lorry</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    header {
+      background-color: #007BFF;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    .form-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .form-container input, .form-container select, .form-container button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .form-container button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .form-container button:hover {
+      background-color: #0056b3;
+    }
+  .form-container button:nth-child(2) {
+    background-color: #dc3545; /* Bootstrap's danger color */
+  }
+  .form-container button:nth-child(2):hover {
+    background-color: #c82333;
+  }
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Edit Lorry</h1>
+  </header>
+  <div class="form-container">
+    <label for="lorryName">Lorry Name or Number:</label>
+    <input type="text" id="lorryName" placeholder="Enter lorry name or number">
+  
+    <label for="driverSelect">Driver:</label>
+    <select id="driverSelect">
+      <option value="">Select a driver</option>
+    </select>
+  
+    <div style="display: flex; gap: 10px;">
+      <button onclick="updateLorry()">Update Lorry</button>
+      <button onclick="discardChanges()" style="background-color: #dc3545;">Discard</button>
+    </div>
+  </div>
+  
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const lorryid = urlParams.get('lorryid'); // Get lorry ID from query parameters
+
+    // Fetch and populate the lorry data
+    async function loadLorryDetails() {
+      try {
+        const lorryResponse = await fetch(`http://localhost:5000/api/lorries/${lorryid}`);
+        const lorry = await lorryResponse.json();
+
+        document.getElementById('lorryName').value = lorry.lorryid;
+        loadDrivers(lorry.driver?._id); // Pass current driver ID to preselect
+      } catch (error) {
+        console.error('Error loading lorry details:', error);
+      }
+    }
+
+    // Fetch and populate available drivers
+    async function loadDrivers(selectedDriverId = '') {
+      try {
+        const driverResponse = await fetch('http://localhost:5000/api/drivers');
+        const drivers = await driverResponse.json();
+
+        const driverSelect = document.getElementById('driverSelect');
+        driverSelect.innerHTML = '<option value="">Select a driver</option>';
+        drivers.forEach(driver => {
+          const option = document.createElement('option');
+          option.value = driver._id;
+          option.textContent = driver.name;
+          if (driver._id === selectedDriverId) {
+            option.selected = true;
+          }
+          driverSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading drivers:', error);
+      }
+    }
+    function discardChanges() {
+  if (confirm("Are you sure you want to discard changes?")) {
+    window.location.href = 'lorry-details.html'; // Redirect to the lorry list page
+  }
+}
+
+
+    // Update the lorry
+    async function updateLorry() {
+      const lorryNameInput = document.getElementById('lorryName').value.trim();
+      const driverId = document.getElementById('driverSelect').value;
+
+      if (!lorryNameInput) {
+        alert('Please enter a valid lorry name or number.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/lorries/${lorryid}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lorryid: lorryNameInput, driver: driverId || null })
+        });
+
+        if (response.ok) {
+          alert('Lorry updated successfully!');
+          window.location.href = 'lorry-details.html'; // Redirect to lorry list
+        } else {
+          alert('Failed to update lorry.');
+        }
+      } catch (error) {
+        console.error('Error updating lorry:', error);
+      }
+    }
+
+    // Load the lorry details on page load
+    window.onload = loadLorryDetails;
+  </script>
+</body>
+</html>

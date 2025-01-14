@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Order</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    header {
+      background-color: #007BFF;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    .container {
+      padding: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    input, textarea, select, button {
+      font-size: 14px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .cancel-btn {
+      background-color: #dc3545;
+    }
+    .cancel-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Edit Order</h1>
+</header>
+
+<div class="container">
+  <form id="editOrderForm">
+    <label for="orderNumber">Order Number</label>
+    <input type="text" id="orderNumber" required readonly /> <!-- Read-only for order number -->
+
+    <label for="orderDescription">Order Description</label>
+    <textarea id="orderDescription" rows="4" required></textarea>
+
+    <label for="orderDate">Order Date</label>
+    <input type="date" id="orderDate" required />
+    <label for="lorryId">Select Lorry</label>
+    <label for="currentLorry">Current Lorry</label>
+    <input type="text" id="currentLorry" readonly />
+    
+    <label for="lorryId">Select New Lorry</label>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <select id="lorryId" required onchange="updateLorryNumber()">
+        <option value="">-- Select a Lorry --</option>
+      </select>
+      <div id="selectedLorryNumber" style="font-weight: bold; color: #007BFF;"></div>
+    </div>
+    
+
+
+
+    <div style="display: flex; gap: 10px;">
+      <button type="submit">Save Changes</button>
+      <button type="button" class="cancel-btn" onclick="cancelEdit()">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get("orderId");
+
+  // ✅ Fetch Order Details
+// ✅ Fetch Order Details
+// ✅ Fetch Order Details
+async function fetchOrderDetails() {
+  try {
+    const response = await fetch(`http://localhost:5000/api/orders/${orderId}`);
+    if (!response.ok) throw new Error("Failed to fetch order details");
+
+    const order = await response.json();
+    const lorryId = order.lorryid;  // Ensure that lorryid is correctly accessed
+
+    // If lorryId is an object, print its actual value (e.g., lorryId.lorryid)
+    if (lorryId && lorryId.lorryid) {
+      console.log("Lorry ID:", lorryId.lorryid);  // Print the actual lorryid value
+    } else {
+      console.log("Lorry ID not available");
+    }
+
+    // Set the order details in the form
+    document.getElementById("orderNumber").value = order.orderNumber;
+    document.getElementById("orderDescription").value = order.orderDescription;
+    document.getElementById("orderDate").value = new Date(order.orderDate).toISOString().split('T')[0];
+
+    // Show current lorry id
+    document.getElementById("currentLorry").value = lorryId && lorryId.lorryid ? lorryId.lorryid : "No lorry assigned";
+
+    // Fetch lorries if there's an existing lorry assigned
+    await fetchLorryList(order.lorryid ? order.lorryid._id : "");  // Pre-select lorry
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    alert("Failed to load order details.");
+  }
+}
+
+
+
+  // ✅ Fetch Lorry List & Set Default Selection
+  async function fetchLorryList(selectedLorryId = "") {
+  try {
+    const response = await fetch("http://localhost:5000/api/lorries");
+    if (!response.ok) throw new Error("Failed to fetch lorry list");
+
+    const lorries = await response.json();
+    const lorrySelect = document.getElementById("lorryId");
+    const selectedLorryDisplay = document.getElementById("selectedLorryNumber");
+
+    lorrySelect.innerHTML = '<option value="">-- Select a Lorry --</option>';
+
+    lorries.forEach((lorry) => {
+      const option = document.createElement("option");
+      option.value = lorry._id;
+      option.textContent = lorry.lorryid; 
+
+      if (lorry._id === selectedLorryId) {
+        option.selected = true;
+        selectedLorryDisplay.textContent = `New Lorry: ${lorry.lorryid}`;
+      }
+
+      lorrySelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error fetching lorry list:", error);
+    alert("Failed to load lorry list.");
+  }
+}
+
+function updateLorryNumber() {
+  const selectedLorryId = document.getElementById("lorryId").value;
+  const selectedLorryDisplay = document.getElementById("selectedLorryNumber");
+
+  fetch("http://localhost:5000/api/lorries")
+    .then(response => response.json())
+    .then(lorries => {
+      const selectedLorry = lorries.find(lorry => lorry._id === selectedLorryId);
+      selectedLorryDisplay.textContent = selectedLorry ? `New Lorry: ${selectedLorry.lorryid}` : "";
+    })
+    .catch(error => console.error("Error fetching lorry list:", error));
+}
+
+  // ✅ Handle Form Submission
+  document.getElementById("editOrderForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const updatedOrder = {
+        orderNumber: document.getElementById("orderNumber").value,
+        orderDescription: document.getElementById("orderDescription").value,
+        orderDate: document.getElementById("orderDate").value,
+        lorryid: document.getElementById("lorryId").value, // Ensure the correct lorry ID is sent
+    };
+
+    try {
+        const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedOrder),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to update order");
+        }
+
+        alert("Order updated successfully.");
+        window.location.href = "order-details.html"; // Redirect after update
+    } catch (error) {
+        console.error("Error updating order:", error);
+        alert("Failed to update order.");
+    }
+});
+
+
+  function cancelEdit() {
+    window.location.href = "order-details.html";
+  }
+
+  // ✅ Load Order Details on Page Load
+  if (orderId) {
+    fetchOrderDetails();
+  } else {
+    alert("No order ID provided.");
+    window.location.href = "order-details.html";
+  }
+</script>
+
+
+</body>
+</html>

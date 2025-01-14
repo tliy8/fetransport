@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Order</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    header {
+      background-color:#007BFF;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    .container {
+      padding: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    form input, form select, form button {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    form button {
+      color: white;
+      background-color: #28a745;
+      cursor: pointer;
+    }
+    form button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Add Order</h1>
+  </header>
+  <div class="container">
+    <form id="orderForm">
+      <input type="text" id="orderNumber" placeholder="Order Number" required />
+      <input type="text" id="orderDescription" placeholder="Order Description" required />
+      <select id="lorryid" required>
+        <option value="">Select Lorry</option>
+      </select>
+      <input type="date" id="orderDate" required />
+      <button type="submit">Save Order</button>
+    </form>
+  </div>
+
+  <script>
+    const lorryDropdown = document.getElementById("lorryid");
+
+    async function fetchLorries() {
+      try {
+        const response = await fetch("http://localhost:5000/api/lorries"); // Adjust API URL as needed
+        const lorries = await response.json();
+
+        lorries.forEach(lorry => {
+          const option = document.createElement("option");
+          option.value = lorry.lorryid;
+          option.textContent = `${lorry.lorryid}`; // Adjust based on your schema
+          lorryDropdown.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error fetching lorries:", error);
+      }
+    }
+
+    fetchLorries(); // Fetch lorry list on page load
+
+    document.getElementById("orderForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const orderNumber = document.getElementById("orderNumber").value;
+    const orderDescription = document.getElementById("orderDescription").value;
+    const lorryid = document.getElementById("lorryid").value; // Get selected name
+    const orderDate = document.getElementById("orderDate").value;
+    if (!lorryid) {
+    alert("Please select a lorry!");
+    return;
+  }
+    const orderData = { orderNumber, orderDescription, lorryid, orderDate };
+
+      try {
+        const response = await fetch("http://localhost:5000/api/orders/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderData),
+        });
+        const data = await response.json();
+        console.log("Response:", data); // Debugging log
+        if (response.ok) {
+          alert("Order created successfully!");
+          window.location.href = "order-details.html"; // Redirect after successful creation
+        } else {
+          alert("Failed to create order.");
+        }
+      } catch (error) {
+        console.error("Error creating order:", error);
+      }
+    });
+  </script>
+</body>
+</html>

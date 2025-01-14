@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Driver</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    header {
+      background-color: #343a40;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    .container {
+      padding: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    form input, form button {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    form button {
+      color: white;
+      background-color: #28a745;
+      cursor: pointer;
+    }
+    form button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Add Driver</h1>
+  </header>
+  <div class="container">
+    <form id="driverForm">
+      <input type="text" id="driverNumber" placeholder="Driver Number" required />
+      <input type="text" id="name" placeholder="Driver Name" required />
+      <input type="text" id="contactNumber" placeholder="Contact Number" required />
+      <input type="text" id="licenseNumber" placeholder="License Number" required />
+      <button type="submit">Save Driver</button>
+    </form>
+    <p id="responseMessage"></p>
+  </div>
+  <script>
+    document.getElementById("driverForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const driverNumber = document.getElementById("driverNumber").value;
+      const name = document.getElementById("name").value;
+      const contactNumber = document.getElementById("contactNumber").value;
+      const licenseNumber = document.getElementById("licenseNumber").value;
+      const responseMessage = document.getElementById("responseMessage");
+
+      try {
+        const response = await fetch("http://localhost:5000/api/drivers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ driverNumber,  name, contactNumber, licenseNumber })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          responseMessage.style.color = "green";
+          responseMessage.textContent = "Driver added successfully!";
+          document.getElementById("driverForm").reset();
+        } else {
+          responseMessage.style.color = "red";
+          responseMessage.textContent = `Error: ${result.message}`;
+        }
+      } catch (error) {
+        console.error("Error adding driver:", error);
+        responseMessage.style.color = "red";
+        responseMessage.textContent = "Failed to add driver. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>

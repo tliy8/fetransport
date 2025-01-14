@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Shipment</title>
+    <style>
+        /* Copy the relevant styles from shipment.html */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Shipment</h1>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="lorrySelect">Lorry</label>
+                <select id="lorrySelect" required>
+                    <option value="">Select Lorry</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="orderSelect">Order</label>
+                <input type="text" id="orderSelect" readonly style="background-color: #f0f0f0;">
+            </div>
+            <div class="form-group">
+                <label for="depart">Departure Location</label>
+                <input type="text" id="depart" required>
+            </div>
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" id="destination" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="status">Type</label>
+                <select id="status" required>
+                    <option value="">Select Type</option>
+                    <option value="Load">Load</option>
+                    <option value="Delivery">Delivery</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='shipment.html'">Cancel</button>
+            <button type="submit" class="btn btn-primary">Update Shipment</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Get shipment ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const shipmentId = urlParams.get('id');
+            
+            console.log('Shipment ID from URL:', shipmentId); // Debug log
+
+            if (!shipmentId) {
+                alert('No shipment ID provided');
+                window.location.href = 'shipment.html';
+                return;
+            }
+
+            try {
+                // Fetch and populate lorries
+                await fetchLorries();
+                
+                // Fetch shipment details and populate form
+                await fetchShipmentDetails(shipmentId);
+            } catch (error) {
+                console.error('Error during initialization:', error);
+            }
+
+            // Add form submit handler
+            document.getElementById('editForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                updateShipment(shipmentId);
+            });
+        });
+
+        async function fetchLorries() {
+            try {
+                const response = await fetch("http://localhost:5000/api/lorries");
+                if (!response.ok) throw new Error("Failed to fetch lorries");
+                const lorries = await response.json();
+
+                const lorrySelect = document.getElementById("lorrySelect");
+                lorries.forEach(lorry => {
+                    const option = document.createElement("option");
+                    option.value = lorry._id;
+                    option.textContent = lorry.lorryid;
+                    lorrySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching lorries:", error);
+            }
+        }
+
+        async function fetchShipmentDetails(shipmentId) {
+            try {
+                console.log("Fetching shipment with ID:", shipmentId);
+
+                const response = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`);
+                
+                if (!response.ok) {
+                    console.error("Server response not OK:", response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error("Error response:", errorText);
+                    throw new Error(`Failed to fetch shipment: ${response.status}`);
+                }
+
+                const shipment = await response.json();
+                console.log("Received shipment data:", shipment);
+
+                if (!shipment) {
+                    throw new Error("No shipment data received");
+                }
+
+                // Set lorry value
+                document.getElementById("lorrySelect").value = shipment.lorryid || "";
+
+                // Fetch order details to display order information
+                if (shipment.orderid) {
+                    try {
+                        const orderResponse = await fetch(`http://localhost:5000/api/orders/${shipment.orderid}`);
+                        const orderData = await orderResponse.json();
+                        // Display order number or description in the read-only input
+                        document.getElementById("orderSelect").value = 
+                            orderData.orderNumber || orderData.orderDescription || shipment.orderid;
+                    } catch (error) {
+                        console.error("Error fetching order details:", error);
+                        document.getElementById("orderSelect").value = "Order details not available";
+                    }
+                }
+
+                // Set other form values
+                document.getElementById("depart").value = shipment.depart || "";
+                document.getElementById("destination").value = shipment.destination || "";
+                document.getElementById("date").value = shipment.date ? 
+                    new Date(shipment.date).toISOString().split("T")[0] : "";
+                document.getElementById("status").value = shipment.type || "";
+
+            } catch (error) {
+                console.error("Detailed error in fetchShipmentDetails:", error);
+                alert(`Failed to load shipment details: ${error.message}`);
+            }
+        }
+
+        async function updateShipment(shipmentId) {
+            try {
+                // First get the original shipment to preserve the order ID
+                const originalResponse = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`);
+                const originalShipment = await originalResponse.json();
+
+                const shipmentData = {
+                    lorryid: document.getElementById("lorrySelect").value,
+                    orderid: originalShipment.orderid, // Keep the original order ID
+                    depart: document.getElementById("depart").value,
+                    destination: document.getElementById("destination").value,
+                    date: document.getElementById("date").value,
+                    type: document.getElementById("status").value,
+                    notification: "Unsend"
+                };
+
+                const response = await fetch(`http://localhost:5000/api/shipments/${shipmentId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(shipmentData)
+                });
+
+                if (!response.ok) throw new Error("Failed to update shipment");
+
+                alert("Shipment updated successfully!");
+                window.location.href = 'shipment.html';
+            } catch (error) {
+                console.error("Error updating shipment:", error);
+                alert("Failed to update shipment");
+            }
+        }
+    </script>
+</body>
+</html>

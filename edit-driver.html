@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Driver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .discard {
+            background-color: #6c757d;
+        }
+        .discard:hover {
+            background-color: #5a6268;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Edit Driver</h2>
+    <form id="editDriverForm">
+        <label for="driverNumber">Driver Number:</label>
+        <input type="text" id="driverNumber" name="driverNumber" required>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="contactNumber">Contact Number:</label>
+        <input type="text" id="contactNumber" name="contactNumber" required>
+
+        <label for="licenseNumber">License Number:</label>
+        <input type="text" id="licenseNumber" name="licenseNumber" required>
+
+        <div class="buttons">
+            <button type="submit">Save Changes</button>
+            <button type="button" class="discard" id="discardButton">Discard Changes</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const driverId = new URLSearchParams(window.location.search).get("id");
+
+    async function fetchDriverDetails() {
+        try {
+            const response = await fetch(`http://localhost:5000/api/drivers/${driverId}`);
+            if (!response.ok) throw new Error("Failed to fetch driver details");
+
+            const driver = await response.json();
+            document.getElementById("driverNumber").value = driver.driverNumber;
+            document.getElementById("name").value = driver.name;
+            document.getElementById("contactNumber").value = driver.contactNumber;
+            document.getElementById("licenseNumber").value = driver.licenseNumber;
+        } catch (error) {
+            alert("Error loading driver details. Please try again.");
+            console.error(error);
+        }
+    }
+
+    document.getElementById("editDriverForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const updatedData = {
+            driverNumber: document.getElementById("driverNumber").value,
+            name: document.getElementById("name").value,
+            contactNumber: document.getElementById("contactNumber").value,
+            licenseNumber: document.getElementById("licenseNumber").value,
+        };
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/drivers/${driverId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) throw new Error("Failed to update driver details");
+
+            alert("Driver updated successfully!");
+            window.location.href = "driver-details.html";
+        } catch (error) {
+            alert("Error updating driver details");
+            console.error(error);
+        }
+    });
+
+    document.getElementById("discardButton").addEventListener("click", function() {
+        if (confirm("Discard changes and go back?")) {
+            window.location.href = "driver-details.html";
+        }
+    });
+
+    fetchDriverDetails();
+</script>
+
+</body>
+</html>
