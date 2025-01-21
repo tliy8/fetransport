@@ -41,6 +41,59 @@
     }
   </style>
 </head>
+<style> 
+  /* General form styling */
+form {
+  max-width: 600px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+}
+
+/* Styling for rows */
+.row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Larger input boxes */
+.row input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Dropdown and date input styling */
+select,
+input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Submit button styling */
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+</style>
 <body>
   <header>
     <h1>Add Order</h1>
@@ -48,13 +101,21 @@
   <div class="container">
     <form id="orderForm">
       <input type="text" id="orderNumber" placeholder="Order Number" required />
-      <input type="text" id="orderDescription" placeholder="Order Description" required />
+      
+      <div class="row">
+        <input type="text" id="load" placeholder="Load Description" required />
+        <input type="text" id="delivery" placeholder="Delivery Description" required />
+      </div>
+      
       <select id="lorryid" required>
         <option value="">Select Lorry</option>
       </select>
+      
       <input type="date" id="orderDate" required />
+      
       <button type="submit">Save Order</button>
     </form>
+    
   </div>
 
   <script>
@@ -82,14 +143,15 @@
       event.preventDefault();
 
       const orderNumber = document.getElementById("orderNumber").value;
-    const orderDescription = document.getElementById("orderDescription").value;
+    const loadorder = document.getElementById("load").value;
+    const deliveryorder = document.getElementById("delivery").value;
     const lorryid = document.getElementById("lorryid").value; // Get selected name
     const orderDate = document.getElementById("orderDate").value;
     if (!lorryid) {
     alert("Please select a lorry!");
     return;
   }
-    const orderData = { orderNumber, orderDescription, lorryid, orderDate };
+    const orderData = { orderNumber, load,delivery, lorryid, orderDate };
 
       try {
         const response = await fetch("https://trasnsport-production.up.railway.app/api/orders/", {

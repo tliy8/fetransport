@@ -217,69 +217,83 @@
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     }
+    filteredOrders.forEach((order) => {
+  const orderItem = document.createElement("div");
+  orderItem.className = "order-item";
 
-    function renderOrders(filteredOrders) {
-      const orderList = document.getElementById("orderList");
-      orderList.innerHTML = "";
-      if (filteredOrders.length === 0) {
-        orderList.innerHTML = "<p>No orders found.</p>";
-        return;
-      }
+  // Order ID Row
+  const orderRow = document.createElement("div");
+  orderRow.textContent = `Order ID: ${order.orderNumber}`;
+  orderRow.className = "order-row";
 
-      filteredOrders.forEach((order) => {
-        const orderItem = document.createElement("div");
-        orderItem.className = "order-item";
-        
-        const orderContent = document.createElement("div");
-        orderContent.textContent = `${order.orderNumber} - ${order.orderDescription} - ${formatDate(order.orderDate)}`;
-        
-        const editButton = document.createElement("button");
-        editButton.textContent = "Edit";
-        editButton.onclick = () => {
-          window.location.href = `edit-order.html?orderId=${order._id}`;
-        };
+  // Details Row: Load, Delivery, and Date
+  const detailsRow = document.createElement("div");
+  detailsRow.textContent = `Load: ${order.load}, Delivery: ${order.delivery}, Date: ${formatDate(order.orderDate)}`;
+  detailsRow.className = "details-row";
 
-        // Create Delete Button
-        const deleteButton = document.createElement("button");
-        deleteButton.classList.add("delete-btn");
-        deleteButton.textContent = "Delete";
-        deleteButton.onclick = async () => {
-          if (confirm("Are you sure you want to delete this order? This will also delete all related shipments.")) {
-            try {
-              // First delete all related shipments
-              const shipmentResponse = await fetch(`https://trasnsport-production.up.railway.app/api/shipments/by-order/${order._id}`, {
-                method: 'DELETE'
-              });
+  // Edit Button
+  const editButton = document.createElement("button");
+  editButton.textContent = "Edit";
+  editButton.className = "btn edit-btn";
+  editButton.onclick = () => {
+    window.location.href = `edit-order.html?orderId=${order._id}`;
+  };
 
-              if (!shipmentResponse.ok) {
-                throw new Error('Failed to delete related shipments');
-              }
-
-              // Then delete the order
-              const orderResponse = await fetch(`https://trasnsport-production.up.railway.app/api/orders/${order._id}`, {
-                method: 'DELETE'
-              });
-
-              if (!orderResponse.ok) {
-                throw new Error('Failed to delete order');
-              }
-
-              alert('Order and related shipments deleted successfully!');
-              fetchOrders(); // Refresh the order list
-            } catch (error) {
-              console.error('Error:', error);
-              alert('Failed to delete order and shipments');
-            }
+  // Delete Button
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "btn delete-btn";
+  deleteButton.textContent = "Delete";
+  deleteButton.onclick = async () => {
+    if (confirm("Are you sure you want to delete this order? This will also delete all related shipments.")) {
+      try {
+        // Delete related shipments
+        const shipmentResponse = await fetch(
+          `https://trasnsport-production.up.railway.app/api/shipments/by-order/${order._id}`,
+          {
+            method: "DELETE",
           }
-        };
+        );
 
-        orderItem.appendChild(orderContent);
-        orderItem.appendChild(editButton);
-        orderItem.appendChild(deleteButton);
-        
-        orderList.appendChild(orderItem);
-      });
+        if (!shipmentResponse.ok) {
+          throw new Error("Failed to delete related shipments");
+        }
+
+        // Delete the order
+        const orderResponse = await fetch(
+          `https://trasnsport-production.up.railway.app/api/orders/${order._id}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        if (!orderResponse.ok) {
+          throw new Error("Failed to delete order");
+        }
+
+        alert("Order and related shipments deleted successfully!");
+        fetchOrders(); // Refresh the order list
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to delete order and shipments");
+      }
     }
+  };
+
+  // Button Container
+  const buttonContainer = document.createElement("div");
+  buttonContainer.className = "button-container";
+  buttonContainer.appendChild(editButton);
+  buttonContainer.appendChild(deleteButton);
+
+  // Append Rows and Buttons to Order Item
+  orderItem.appendChild(orderRow);
+  orderItem.appendChild(detailsRow);
+  orderItem.appendChild(buttonContainer);
+
+  // Append Order Item to List
+  orderList.appendChild(orderItem);
+});
+
 
     async function searchOrders() {
       const orderNumberSearch = document.getElementById("orderNumberSearch").value.trim().toLowerCase();
