@@ -48,6 +48,22 @@ form {
   margin: auto;
   font-family: Arial, sans-serif;
 }
+textarea {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical; /* Allow resizing vertically */
+  min-height: 100px; /* Default height for a block appearance */
+  font-family: "Courier New", Courier, monospace; /* Monospace font for a structured look */
+  background-color: #f9f9f9; /* Light background to mimic a code block */
+  color: #333; /* Text color */
+  white-space: pre; /* Preserve whitespace and line breaks */
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+}
+
 
 /* Styling for rows */
 .row {
@@ -103,9 +119,10 @@ button:hover {
       <input type="text" id="orderNumber" placeholder="Order Number" required />
       
       <div class="row">
-        <input type="text" id="load" placeholder="Load Description" required />
-        <input type="text" id="delivery" placeholder="Delivery Description" required />
+        <textarea id="load" placeholder="Load Description" required></textarea>
+        <textarea id="delivery" placeholder="Delivery Description" required></textarea>
       </div>
+      
       
       <select id="lorryid" required>
         <option value="">Select Lorry</option>
