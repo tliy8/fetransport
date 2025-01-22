@@ -159,7 +159,7 @@ button:hover {
     document.getElementById("orderForm").addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      const orderNumber = document.getElementById("orderNumber").value;
+    const orderNumber = document.getElementById("orderNumber").value;
     const loadorder = document.getElementById("load").value;
     const deliveryorder = document.getElementById("delivery").value;
     const lorryid = document.getElementById("lorryid").value; // Get selected name
@@ -168,7 +168,7 @@ button:hover {
     alert("Please select a lorry!");
     return;
   }
-    const orderData = { orderNumber, load,delivery, lorryid, orderDate };
+    const orderData = { orderNumber, loadorder , deliveryorder , lorryid, orderDate };
 
       try {
         const response = await fetch("https://trasnsport-production.up.railway.app/api/orders/", {
