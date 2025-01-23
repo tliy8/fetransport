@@ -42,7 +42,6 @@
   </style>
 </head>
 <style> 
-  /* General form styling */
 form {
   max-width: 600px;
   margin: auto;
@@ -55,24 +54,21 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
-  resize: vertical; /* Allow resizing vertically */
-  min-height: 100px; /* Default height for a block appearance */
-  font-family: "Courier New", Courier, monospace; /* Monospace font for a structured look */
-  background-color: #f9f9f9; /* Light background to mimic a code block */
-  color: #333; /* Text color */
-  white-space: pre; /* Preserve whitespace and line breaks */
-  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  resize: vertical;
+  min-height: 100px;
+  font-family: "Courier New", Courier, monospace;
+  background-color: #f9f9f9;
+  color: #333;
+  white-space: pre;
+  overflow-x: auto;
 }
 
-
-/* Styling for rows */
 .row {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 }
 
-/* Larger input boxes */
 .row input {
   flex: 1;
   padding: 10px;
@@ -82,7 +78,6 @@ textarea {
   box-sizing: border-box;
 }
 
-/* Dropdown and date input styling */
 select,
 input[type="date"] {
   width: 100%;
@@ -94,7 +89,6 @@ input[type="date"] {
   box-sizing: border-box;
 }
 
-/* Submit button styling */
 button {
   padding: 10px 15px;
   font-size: 16px;
@@ -117,19 +111,21 @@ button:hover {
   <div class="container">
     <form id="orderForm">
       <input type="text" id="orderNumber" placeholder="Order Number" required />
-      
+
       <div class="row">
         <textarea id="load" placeholder="Load Description" required></textarea>
         <textarea id="delivery" placeholder="Delivery Description" required></textarea>
       </div>
-      
-      
+
       <select id="lorryid" required>
         <option value="">Select Lorry</option>
       </select>
-      
+
       <input type="date" id="orderDate" required />
-      
+
+      <!-- Additional button for sending WhatsApp message -->
+
+
       <button type="submit">Save Order</button>
     </form>
     
@@ -138,15 +134,17 @@ button:hover {
   <script>
     const lorryDropdown = document.getElementById("lorryid");
 
+    // Fetch Lorries
     async function fetchLorries() {
       try {
-        const response = await fetch("https://trasnsport-production.up.railway.app/api/lorries"); // Adjust API URL as needed
+        const response = await fetch("https://trasnsport-production.up.railway.app/api/lorries");
         const lorries = await response.json();
+        console.log("Fetched Lorries:", lorries); // Debug fetched data
 
-        lorries.forEach(lorry => {
+        lorries.forEach((lorry) => {
           const option = document.createElement("option");
-          option.value = lorry.lorryid;
-          option.textContent = `${lorry.lorryid}`; // Adjust based on your schema
+          option.value = lorry._id; // Use _id for the value (MongoDB ObjectId)
+          option.textContent = lorry.lorryid; // Display lorryid for the user
           lorryDropdown.appendChild(option);
         });
       } catch (error) {
@@ -156,20 +154,22 @@ button:hover {
 
     fetchLorries(); // Fetch lorry list on page load
 
+    // Submit form to create order
     document.getElementById("orderForm").addEventListener("submit", async (event) => {
       event.preventDefault();
 
-    const orderNumber = document.getElementById("orderNumber").value;
-    const loadorder = document.getElementById("load").value;
-    const deliveryorder = document.getElementById("delivery").value;
-    const lorryid = document.getElementById("lorryid").value; // Get selected name
-    const orderDate = document.getElementById("orderDate").value;
-    if (!lorryid) {
-    alert("Please select a lorry!");
-    return;
-  }
-  const orderData = { orderNumber, loadorder, deliveryorder, lorryid, orderDate };
+      const orderNumber = document.getElementById("orderNumber").value;
+      const loadorder = document.getElementById("load").value;
+      const deliveryorder = document.getElementById("delivery").value;
+      const lorryid = document.getElementById("lorryid").value; // Use _id for lorry
+      const orderDate = document.getElementById("orderDate").value;
 
+      if (!lorryid) {
+        alert("Please select a lorry!");
+        return;
+      }
+
+      const orderData = { orderNumber, loadorder, deliveryorder, lorryid, orderDate};
 
       try {
         const response = await fetch("https://trasnsport-production.up.railway.app/api/orders/", {
@@ -177,8 +177,10 @@ button:hover {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(orderData),
         });
+
         const data = await response.json();
         console.log("Response:", data); // Debugging log
+
         if (response.ok) {
           alert("Order created successfully!");
           window.location.href = "order-details.html"; // Redirect after successful creation
@@ -189,6 +191,93 @@ button:hover {
         console.error("Error creating order:", error);
       }
     });
+
+    // Send Message to WhatsApp
+    const sendMessageButton = document.getElementById("sendMessageButton");
+
+sendMessageButton.addEventListener("click", async () => {
+  const lorryId = document.getElementById("lorryid").value;
+  console.log("Selected Lorry ID (_id):", lorryId);
+
+  // Retrieve form data
+  const orderNumber = parseInt(document.getElementById("orderNumber").value, 10); // Ensure it's a number
+  const loadDescription = document.getElementById("load").value.trim(); // Trim extra spaces
+  const deliveryDescription = document.getElementById("delivery").value.trim(); // Trim extra spaces
+  const orderDate = document.getElementById("orderDate").value;
+
+  // Check if all fields are filled out
+  if (!lorryId || !orderNumber || !loadDescription || !deliveryDescription || !orderDate) {
+    alert("Please fill in all fields before proceeding.");
+    return;
+  }
+
+  try {
+    // Save the order first
+    const orderData = {
+      orderNumber,
+      loadorder: loadDescription,
+      deliveryorder: deliveryDescription,
+      lorryid: lorryId, // Referencing the ObjectId of the lorry
+      orderDate: new Date(orderDate), // Ensure it's a valid date
+    };
+
+    // Send the order data to the backend
+    const saveResponse = await fetch("https://trasnsport-production.up.railway.app/api/orders/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
+
+    if (!saveResponse.ok) {
+      const errorData = await saveResponse.json();
+      throw new Error(errorData.message || "Failed to save order");
+    }
+
+    console.log("Order saved successfully!");
+
+    // Fetch the driver contact number for the selected lorry
+    const lorryResponse = await fetch(`https://trasnsport-production.up.railway.app/api/lorries/${lorryId}`);
+    if (!lorryResponse.ok) {
+      throw new Error("Failed to fetch driver details");
+    }
+
+    const lorryDetails = await lorryResponse.json();
+    let driverContact = lorryDetails.driver.contactNumber;
+
+    if (!driverContact) {
+      alert("Driver contact not found for the selected lorry.");
+      return;
+    }
+
+    // Ensure the contact number is in Malaysian format
+    if (!driverContact.startsWith("+60")) {
+      if (driverContact.startsWith("0")) {
+        driverContact = "+60" + driverContact.substring(1); // Replace leading '0' with '+60'
+      } else {
+        driverContact = "+60" + driverContact; // Add '+60' if missing
+      }
+    }
+
+    // Prepare the WhatsApp message
+    const message = `Isi: ${loadDescription}\nBalik: ${deliveryDescription}\nDate: ${new Date(orderDate).toLocaleDateString()}`;
+    const whatsappUrl = `https://wa.me/${driverContact}?text=${encodeURIComponent(message)}`;
+
+    // Open WhatsApp to send the message
+    window.open(whatsappUrl, "_blank");
+
+    // Notify the user
+    alert("Order saved and WhatsApp message sent successfully!");
+
+    // Redirect to order details page
+    window.location.href = "order-details.html";
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert(`Failed to complete the operation: ${error.message}`);
+  }
+});
+
+
   </script>
 </body>
 </html>

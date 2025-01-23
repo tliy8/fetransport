@@ -108,6 +108,26 @@
       background-color: #575757;
       border-radius: 5px;
     }
+    .add-order-btn {
+      display: inline-block; /* Makes it behave like a button */
+      background-color: #007BFF; /* Blue background */
+      color: white; /* White text */
+      padding: 12px 20px; /* Button padding */
+      font-size: 16px; /* Font size */
+      font-weight: bold; /* Bold text */
+      text-decoration: none; /* Remove underline */
+      border-radius: 5px; /* Rounded corners */
+      transition: background-color 0.3s ease; /* Smooth hover effect */
+    }
+
+    .add-order-btn:hover {
+      background-color: #0056b3; /* Darker blue on hover */
+    }
+
+    .add-order-btn:active {
+      background-color: #004085; /* Even darker blue on click */
+      box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2); /* Inner shadow on click */
+    }
   </style>
 </head>
 <body>
@@ -115,9 +135,10 @@
     <nav>
       <ul>
         <li><a href="index.html">Dashboard</a></li>
-        <li><a href="shipment.html">Shipment</a></li>
-        <li><a href="lorry-details.html">Lorry</a></li>
         <li><a href="order-details.html">Order</a></li>
+        <!-- <li><a href="shipment.html">Shipment</a></li> -->
+        <li><a href="lorry-details.html">Lorry</a></li>
+    
         <li><a href="driver-details.html">Driver</a></li>
         <li><a href="logout.html">Logout</a></li>
       </ul>
@@ -134,12 +155,13 @@
       <button onclick="filterByDate()">Filter by Date</button>
       <button onclick="resetFilters()" class="reset-btn">Reset</button>
     </div>
+  </div>
+  <a href="add-order.html" class="add-order-btn">Add Order</a>
+</div>
     <div id="orderList" class="order-list">
       <!-- Orders will be dynamically loaded here -->
-    </div>
-    <a href="add-order.html" class="add-order-btn">Add Order</a>
-  </div>
-
+    
+  
   <script>
     async function fetchOrders() {
       try {
@@ -158,7 +180,6 @@
     function renderOrders(orders) {
       const orderList = document.getElementById("orderList");
       orderList.innerHTML = ""; // Clear existing content
-      
       if (orders.length === 0) {
         orderList.innerHTML = "<p>No orders found.</p>";
         return;
@@ -171,17 +192,38 @@
         orderItem.innerHTML = `
           <div>
             <p>Order ID: ${order.orderNumber}</p>
-            <p>Load: ${order.loadorder}, Delivery: ${order.deliveryorder}, Date: ${new Date(order.orderDate).toLocaleDateString()}</p>
+            <p>Isi: ${order.loadorder}</p>
+            <p>Balik: ${order.deliveryorder}</p>
+            <p>Date: ${new Date(order.orderDate).toLocaleDateString()}</p>
+            <p>Lorry:${order.lorryid.lorryid}</p>
           </div>
           <div>
             <button onclick="editOrder('${order._id}')">Edit</button>
             <button class="delete-btn" onclick="deleteOrder('${order._id}')">Delete</button>
+            <button class="copy-btn" onclick="copyOrder('${order.orderNumber}', '${order.loadorder}', '${order.deliveryorder}', '${order.orderDate}')">Copy</button>
           </div>
         `;
 
         orderList.appendChild(orderItem);
       });
     }
+
+    function copyOrder(orderNumber, loadorder, deliveryorder, orderDate) {
+  const formattedDate = new Date(orderDate).toLocaleDateString();
+  const textToCopy = `
+Date: ${formattedDate}
+Isi: ${loadorder}
+Balik: ${deliveryorder}
+  `;
+
+  // Copy text to clipboard
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    alert("Order details copied to clipboard!");
+  }).catch((error) => {
+    console.error("Failed to copy text:", error);
+    alert("Failed to copy order details.");
+  });
+}
 
     async function searchOrders() {
       const query = document.getElementById("orderNumberSearch").value.trim().toLowerCase();
@@ -231,7 +273,6 @@
       document.getElementById("endDate").value = "";
       fetchOrders();
     }
-
     async function deleteOrder(orderId) {
       if (confirm("Are you sure you want to delete this order?")) {
         try {
@@ -248,6 +289,10 @@
         }
       }
     }
+    function editOrder(orderId) {
+  // Redirect to the edit order page with the order ID as a query parameter
+  window.location.href = `edit-order.html?orderId=${orderId}`;
+}
 
     // Initial fetch on page load
     fetchOrders();

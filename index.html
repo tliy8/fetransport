@@ -65,9 +65,10 @@
         <nav>
             <ul>
                 <li><a href="index.html">Dashboard</a></li>
-                <li><a href="shipment.html">Shipment</a></li>
-                <li><a href="lorry-details.html">Lorry</a></li>
                 <li><a href="order-details.html">Order</a></li>
+                <!-- <li><a href="shipment.html">Shipment</a></li> -->
+                <li><a href="lorry-details.html">Lorry</a></li>
+                
                 <li><a href="driver-details.html">Driver</a></li>
                 <li><a href="logout.html">Logout</a></li>
             </ul>
@@ -77,14 +78,14 @@
 
     <div class="container">
         <!-- Today's Shipments Section -->
-        <h2>Today's Shipments</h2>
+        <h2>Today's Order</h2>
         <table id="todayShipmentTable">
             <thead>
                 <tr>
                     <th>Order ID</th>
                     <th>Lorry ID</th>
                     <th>Driver Name</th>
-                    <th>Shipment Date</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -93,14 +94,14 @@
         </table>
 
         <!-- Upcoming Shipments Section -->
-        <h2>Upcoming Shipments</h2>
+        <h2>Upcoming Order</h2>
         <table id="upcomingShipmentTable">
             <thead>
                 <tr>
                     <th>Order ID</th>
                     <th>Lorry ID</th>
                     <th>Driver Name</th>
-                    <th>Shipment Date</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,19 +111,17 @@
     </div>
 
     <script>
-        // Fetch and display orders
         async function loadShipments() {
     try {
-        const response = await fetch('https://trasnsport-production.up.railway.app/api/shipments');
+        const response = await fetch('https://trasnsport-production.up.railway.app/api/orders');
         const orders = await response.json();
-
         const today = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
         const todayShipments = [];
         const upcomingShipments = [];
 
         // Sort orders into today and upcoming categories
         orders.forEach(order => {
-            const shipmentDate = new Date(order.date).toISOString().split('T')[0];
+            const shipmentDate = new Date(order.orderDate).toISOString().split('T')[0];
 
             if (shipmentDate === today) {
                 todayShipments.push(order);
@@ -131,8 +130,8 @@
             }
         });
 
-        // Sort upcoming shipments by date (descending)
-        upcomingShipments.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Sort upcoming shipments by date (ascending)
+        upcomingShipments.sort((a, b) => new Date(a.orderDate) - new Date(b.orderDate));
 
         // Populate tables
         populateTable('todayShipmentTable', todayShipments);
@@ -142,35 +141,36 @@
     }
 }
 
-        // Populate a given table with data
-        function populateTable(tableId, shipments) {
-            const tableBody = document.querySelector(`#${tableId} tbody`);
-            tableBody.innerHTML = ''; // Clear previous rows
+// Populate a given table with data
+function populateTable(tableId, shipments) {
+    const tableBody = document.querySelector(`#${tableId} tbody`);
+    tableBody.innerHTML = ''; // Clear previous rows
 
-            shipments.forEach(order => {
-                const row = document.createElement('tr');
+    shipments.forEach(order => {
+        const row = document.createElement('tr');
 
-                const driverName = order.lorryid && order.lorryid.driver
-                    ? order.lorryid.driver.name
-                    : 'Driver info unavailable';
+        const driverName = order.lorryid && order.lorryid.driver
+            ? order.lorryid.driver.name
+            : 'Driver info unavailable';
 
-                const lorryDetails = order.lorryid 
-                    ? order.lorryid.lorryid
-                    : 'Unassigned';
+        const lorryDetails = order.lorryid 
+            ? order.lorryid.lorryid
+            : 'Unassigned';
 
-                row.innerHTML = `
-                    <td>${order.orderNumber}</td>
-                    <td>${lorryDetails}</td>
-                    <td>${driverName}</td>
-                    <td>${new Date(order.date).toLocaleDateString()}</td>
-                `;
+        row.innerHTML = `
+            <td>${order.orderNumber}</td>
+            <td>${lorryDetails}</td>
+            <td>${driverName}</td>
+            <td>${new Date(order.orderDate).toLocaleDateString()}</td>
+        `;
 
-                tableBody.appendChild(row);
-            });
-        }
+        tableBody.appendChild(row);
+    });
+}
 
-        // Load shipments on page load
-        window.onload = loadShipments;
+// Load shipments on page load
+window.onload = loadShipments;
+
     </script>
 </body>
 </html>
